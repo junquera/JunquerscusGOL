@@ -1,0 +1,21 @@
+﻿Compilación iniciada a las 09/03/2015 14:25:35.
+     1>Proyecto "C:\Users\Junquera\Documents\GPU_GOL\GPU_GOL\GPU_GOL\GPU_GOL.vcxproj" en el nodo 2 (Build destinos).
+     1>AddCudaCompileDeps:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\cl.exe /E /nologo /showIncludes /TP /D__CUDACC__ /DWIN32 /D_DEBUG /D_CONSOLE /D_MBCS /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\include" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin" /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\include" /I. /FIcuda_runtime.h /c C:\Users\Junquera\Documents\GPU_GOL\GPU_GOL\GPU_GOL\kernel.cu 
+       CudaBuild:
+         Compiling CUDA source file kernel.cu...
+         cmd.exe /C "C:\Users\Junquera\AppData\Local\Temp\tmpb92a2d522c044cc8882e25eaa7472a4d.cmd"
+         "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2013 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\include"  -G   --keep-dir Debug -maxrregcount=0  --machine 32 --compile -cudart static  -g   -DWIN32 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Zi /RTC1 /MDd  " -o Debug\kernel.cu.obj "C:\Users\Junquera\Documents\GPU_GOL\GPU_GOL\GPU_GOL\kernel.cu"
+         
+         C:\Users\Junquera\Documents\GPU_GOL\GPU_GOL\GPU_GOL>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\bin\nvcc.exe" -gencode=arch=compute_20,code=\"sm_20,compute_20\" --use-local-env --cl-version 2013 -ccbin "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin"  -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\include"  -G   --keep-dir Debug -maxrregcount=0  --machine 32 --compile -cudart static  -g   -DWIN32 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /Zi /RTC1 /MDd  " -o Debug\kernel.cu.obj "C:\Users\Junquera\Documents\GPU_GOL\GPU_GOL\GPU_GOL\kernel.cu" 
+         kernel.cu
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v6.5\include" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\gol.c
+         gol.c
+     1>c:\users\junquera\documents\gpu_gol\gol.c(20): error C2143: error de sintaxis : falta ';' delante de '.'
+     1>c:\users\junquera\documents\gpu_gol\gol.c(21): error C2143: error de sintaxis : falta ';' delante de '.'
+     1>Compilación del proyecto terminada "C:\Users\Junquera\Documents\GPU_GOL\GPU_GOL\GPU_GOL\GPU_GOL.vcxproj" (Build destinos) -- ERROR.
+
+ERROR al compilar.
+
+Tiempo transcurrido 00:00:21.59
