@@ -1,20 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <stdlib.h>
+
+//	Para sleep
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
 
 typedef struct {
 	int sizeX, sizeY;
 	int** celdas;
+	int** nuevo;
 } struct_tablero;
 
+void gridInit(int x, int y, struct_tablero *t); 
 void printGrid(struct_tablero t);
+int compruebaCasillas(struct_tablero *t); 
+int contarVecinos(int x, int y, struct_tablero t);
+void updateGrid(struct_tablero *t);
 
 int main(int argc, char *argv[]){
 
-	int i, j;
+	int i;
 	struct_tablero tablero;
 
-	printf("GOL\n");
+	//	Inicializamos los número aleatorios
+	srand((int) time(NULL));
 
 	if( argc > 1){
 
@@ -26,37 +41,109 @@ int main(int argc, char *argv[]){
 			}
 		}
 
-		tablero.sizeX = atoi(argv[posSize + 1]);
-		tablero.sizeY = atoi(argv[posSize + 2]);
-		tablero.celdas = (int**) malloc(sizeof(int) * tablero.sizeX);
+		if (posSize == -1)
+			return -1;
 
-		for (i = 0; i<tablero.sizeX; i++)
-			tablero.celdas[i] = (int*) malloc(tablero.sizeY * sizeof(int));
+		gridInit(atoi(argv[posSize + 1]), atoi(argv[posSize + 2]), &tablero);
 
 	}
 
-	for (i = 0; i < tablero.sizeX; i++)
-		for (j = 0; j < tablero.sizeY; j++)
-			tablero.celdas[i][j] = 0;	
-	
-	printGrid(tablero);
+	while (compruebaCasillas(&tablero)){
+		#ifdef _WIN32
+		Sleep(1000);
+		system("cls");
+		#else
+		sleep(1000);
+		system("clear");
+		#endif
+	}
 
 	system("pause");
 	return 0;
 }
 
-void gridInit(struct_tablero t){
+void gridInit(int x, int y, struct_tablero *t){
+	int i, j;
 
+	(*t).sizeX = x;
+	(*t).sizeY = y;
+	(*t).celdas = (int**)malloc(sizeof(int) * (*t).sizeX);
+
+	for (i = 0; i<(*t).sizeX; i++)
+		(*t).celdas[i] = (int*)malloc((*t).sizeY * sizeof(int));
+
+	(*t).nuevo = (int**)malloc(sizeof(int) * (*t).sizeX);
+	for (i = 0; i<(*t).sizeX; i++)
+		(*t).nuevo[i] = (int*)malloc((*t).sizeY * sizeof(int));
+
+	for (i = 0; i < (*t).sizeX; i++)
+		for (j = 0; j < (*t).sizeY; j++)
+			(*t).celdas[i][j] = rand() % 2;
 }
 
 void printGrid(struct_tablero t){
+
 	int i, j;
 
 	for (i = 0; i < t.sizeX; i++){
 		printf("[");
 		for (j = 0; j < t.sizeY; j++){
-			printf("%d", t.celdas[i][j]);
+			if (t.celdas[i][j])
+				printf("O");
+			else
+				printf("X");
 		}
 		printf("]\n");
 	}
+}
+
+int compruebaCasillas(struct_tablero *t){
+
+	int i, j, vivo = 0;
+
+	for (i = 0; i < (*t).sizeX; i++){
+		for (j = 0; j < (*t).sizeY; j++){
+			int vecinos = contarVecinos(i, j, *t);
+			if (vecinos == 2 || vecinos == 3){
+				(*t).nuevo[i][j] = 1;
+				vivo = 1;
+			} else{
+				(*t).nuevo[i][j] = 0;
+			}
+		}
+	}
+	updateGrid(t);
+	printGrid(*t);
+
+	return vivo;
+}
+
+int contarVecinos(int x, int y, struct_tablero t){
+
+	int xm = (t.sizeX - ((x - 1) % t.sizeX)) % t.sizeX;
+	int xM = (x + 1) % t.sizeX;
+
+	int ym = (t.sizeY + ((y - 1) % t.sizeY)) % t.sizeY;
+	int yM = (y + 1) % t.sizeY;
+
+	return	(t.celdas[xm][yM] + t.celdas[x][yM] + t.celdas[xM][yM]) + 
+			(t.celdas[xm][y] + t.celdas[xM][y]) + 
+			(t.celdas[xm][ym] + t.celdas[x][ym] + t.celdas[xM][ym]);
+
+}
+
+void updateGrid(struct_tablero *t){
+	int i, j;
+
+	for (i = 0; i < (*t).sizeX; i++){
+		for (j = 0; j < (*t).sizeY; j++){
+			(*t).celdas[i][j] = (*t).nuevo[i][j];
+		}
+	}
+}
+
+// No hace falta, pensaba que era más complicado...
+void verificaCasilla(int *x, int *y, struct_tablero t){
+		*x = (*x) % t.sizeX;
+		*y = (*y) % t.sizeY;
 }

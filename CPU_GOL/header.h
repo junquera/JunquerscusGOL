@@ -1,6 +1,3 @@
-int* casilla;
-
-void printGrid();
 void contarVecinos(tablero, X, Y);
 
 void actualizar();
