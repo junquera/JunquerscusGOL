@@ -35,6 +35,7 @@ int main(int argc, char *argv[]){
 			return -1;
 
 		gridInit(atoi(argv[posSize + 1]), atoi(argv[posSize + 2]), &tablero);
+		printGrid(tablero);
 
 	}
 
@@ -46,6 +47,7 @@ int main(int argc, char *argv[]){
 		sleep(1000);
 		system("clear");
 		#endif
+		printGrid(tablero);
 	}
 
 	system("pause");
@@ -66,9 +68,17 @@ void gridInit(int x, int y, struct_tablero *t){
 	for (i = 0; i<(*t).sizeX; i++)
 		(*t).nuevo[i] = (int*)malloc((*t).sizeY * sizeof(int));
 
+	for (i = 0; i < (*t).sizeX; i++){
+		for (j = 0; j < (*t).sizeY; j++){
+			(*t).celdas[i][j] = 0;
+			(*t).nuevo[i][j] = 0;
+		}
+	}
+
 	for (i = 0; i < (*t).sizeX; i++)
 		for (j = 0; j < (*t).sizeY; j++)
 			(*t).celdas[i][j] = rand() % 2;
+			
 }
 
 void printGrid(struct_tablero t){
@@ -78,6 +88,7 @@ void printGrid(struct_tablero t){
 	for (i = 0; i < t.sizeX; i++){
 		printf("[");
 		for (j = 0; j < t.sizeY; j++){
+			
 			if (t.celdas[i][j])
 				printf("%c", VIVA);
 			else
@@ -94,30 +105,29 @@ int compruebaCasillas(struct_tablero *t){
 	for (i = 0; i < (*t).sizeX; i++){
 		for (j = 0; j < (*t).sizeY; j++){
 			int vecinos = contarVecinos(i, j, *t);
-			if (vecinos == 2 || vecinos == 3){
-				(*t).nuevo[i][j] = 1;
-				vivo = 1;
+			if ((vecinos == 2 && (*t).celdas[i][j]) || vecinos == 3){
+					(*t).nuevo[i][j] = 1;
+					vivo = 1;
 			} else{
 				(*t).nuevo[i][j] = 0;
 			}
 		}
 	}
 	updateGrid(t);
-	printGrid(*t);
 
 	return vivo;
 }
 
 int contarVecinos(int x, int y, struct_tablero t){
 
-	int xm = (t.sizeX - ((x - 1) % t.sizeX)) % t.sizeX;
+	int xm = (t.sizeX + ((x - 1) % t.sizeX)) % t.sizeX;
 	int xM = (x + 1) % t.sizeX;
 
 	int ym = (t.sizeY + ((y - 1) % t.sizeY)) % t.sizeY;
 	int yM = (y + 1) % t.sizeY;
 
-	return	(t.celdas[xm][yM] + t.celdas[x][yM] + t.celdas[xM][yM]) + 
-			(t.celdas[xm][y] + t.celdas[xM][y]) + 
+	return	(t.celdas[xm][yM] + t.celdas[x][yM] + t.celdas[xM][yM]) +
+			(t.celdas[xm][y] + t.celdas[xM][y]) +
 			(t.celdas[xm][ym] + t.celdas[x][ym] + t.celdas[xM][ym]);
 
 }

@@ -1,5 +1,5 @@
 #define VIVA 'O'
-#define MUERTA ' '
+#define MUERTA 'X'
 
 typedef struct {
 	int sizeX, sizeY;
