@@ -1,7 +1,14 @@
-void contarVecinos(tablero, X, Y);
+#define VIVA 'O'
+#define MUERTA ' '
 
-void actualizar();
-void verificaCasilla(x, y);
-void gridInit();
+typedef struct {
+	int sizeX, sizeY;
+	int** celdas;
+	int** nuevo;
+} struct_tablero;
 
-int estaVivo(x - 1, y - 1);
+void gridInit(int x, int y, struct_tablero *t); 
+void printGrid(struct_tablero t);
+int compruebaCasillas(struct_tablero *t); 
+int contarVecinos(int x, int y, struct_tablero t);
+void updateGrid(struct_tablero *t);

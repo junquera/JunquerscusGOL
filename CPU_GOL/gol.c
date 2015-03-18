@@ -11,17 +11,7 @@
 #include <unistd.h>
 #endif
 
-typedef struct {
-	int sizeX, sizeY;
-	int** celdas;
-	int** nuevo;
-} struct_tablero;
-
-void gridInit(int x, int y, struct_tablero *t); 
-void printGrid(struct_tablero t);
-int compruebaCasillas(struct_tablero *t); 
-int contarVecinos(int x, int y, struct_tablero t);
-void updateGrid(struct_tablero *t);
+#include "header.h"
 
 int main(int argc, char *argv[]){
 
@@ -89,9 +79,9 @@ void printGrid(struct_tablero t){
 		printf("[");
 		for (j = 0; j < t.sizeY; j++){
 			if (t.celdas[i][j])
-				printf("O");
+				printf("%c", VIVA);
 			else
-				printf("X");
+				printf("%c", MUERTA);
 		}
 		printf("]\n");
 	}
