@@ -3,69 +3,79 @@
 #include <string.h>
 #include <time.h>
 #include <stdlib.h>
+#include <conio.h>
 
-//	Para sleep
-#ifdef _WIN32
-#include <Windows.h>
-#else
-#include <unistd.h>
-#endif
+
 
 #include "header.h"
 
 int main(int argc, char *argv[]){
 
-	int i;
-	struct_tablero tablero;
+	int i, manual = 0;
+	struct_grid grid;
 
 	//	Inicializamos los número aleatorios
-	srand((int) time(NULL));
+	srand((int)time(NULL));
 
-	if( argc > 1){
+	if (argc > 1){
 
 		int posSize = -1;
-		for(i = 0; i<argc; i++){
-			if(!strcmp(argv[i], "-a")){
+		for (i = 0; i < argc; i++){
+			if (!strcmp(argv[i], "-a")){
 				posSize = i;
 				break;
+			}
+			if (!strcmp(argv[i], "-m")){
+				manual = 1;
 			}
 		}
 
 		if (posSize == -1)
 			return -1;
 
-		gridInit(atoi(argv[posSize + 1]), atoi(argv[posSize + 2]), &tablero);
-		printGrid(tablero);
+		gridInit(atoi(argv[posSize + 1]), atoi(argv[posSize + 2]), &grid);
+		printGrid(grid);
 
 	}
 
-	while (compruebaCasillas(&tablero)){
-		#ifdef _WIN32
-		Sleep(1000);
-		system("cls");
-		#else
-		sleep(1000);
-		system("clear");
-		#endif
-		printGrid(tablero);
-	}
+	juega(&grid, manual);
+
 
 	system("pause");
 	return 0;
 }
 
-void gridInit(int x, int y, struct_tablero *t){
+void juega(struct_grid *t, int manual){
+	while (compruebaCasillas(t)){
+		if (manual){
+			printf("\nPresiona intro para continuar o \"c\" para parar la ejecución...\n");
+
+			int option;
+			do{
+				option = getch();
+				if (option == 67 || option == 99)
+					return;
+			} while (option != 13);
+
+		}
+		else{
+			SLEEP(1000);
+		}
+		printGrid(*t);
+	}
+}
+void gridInit(int x, int y, struct_grid *t){
 	int i, j;
 
 	(*t).sizeX = x;
 	(*t).sizeY = y;
 	(*t).celdas = (int**)malloc(sizeof(int) * (*t).sizeX);
 
-	for (i = 0; i<(*t).sizeX; i++)
+	for (i = 0; i < (*t).sizeX; i++)
 		(*t).celdas[i] = (int*)malloc((*t).sizeY * sizeof(int));
 
 	(*t).nuevo = (int**)malloc(sizeof(int) * (*t).sizeX);
-	for (i = 0; i<(*t).sizeX; i++)
+	for (i = 0; i < (*t).sizeX; i++)
 		(*t).nuevo[i] = (int*)malloc((*t).sizeY * sizeof(int));
 
 	for (i = 0; i < (*t).sizeX; i++){
@@ -78,17 +88,20 @@ void gridInit(int x, int y, struct_tablero *t){
 	for (i = 0; i < (*t).sizeX; i++)
 		for (j = 0; j < (*t).sizeY; j++)
 			(*t).celdas[i][j] = rand() % 2;
-			
+
 }
 
-void printGrid(struct_tablero t){
+void printGrid(struct_grid t){
+
+	CLRSCR();
+	printf("Game of life [CPU]\n\n");
 
 	int i, j;
 
 	for (i = 0; i < t.sizeX; i++){
 		printf("[");
 		for (j = 0; j < t.sizeY; j++){
-			
+
 			if (t.celdas[i][j])
 				printf("%c", VIVA);
 			else
@@ -98,7 +111,7 @@ void printGrid(struct_tablero t){
 	}
 }
 
-int compruebaCasillas(struct_tablero *t){
+int compruebaCasillas(struct_grid *t){
 
 	int i, j, vivo = 0;
 
@@ -106,9 +119,10 @@ int compruebaCasillas(struct_tablero *t){
 		for (j = 0; j < (*t).sizeY; j++){
 			int vecinos = contarVecinos(i, j, *t);
 			if ((vecinos == 2 && (*t).celdas[i][j]) || vecinos == 3){
-					(*t).nuevo[i][j] = 1;
-					vivo = 1;
-			} else{
+				(*t).nuevo[i][j] = 1;
+				vivo = 1;
+			}
+			else{
 				(*t).nuevo[i][j] = 0;
 			}
 		}
@@ -118,7 +132,7 @@ int compruebaCasillas(struct_tablero *t){
 	return vivo;
 }
 
-int contarVecinos(int x, int y, struct_tablero t){
+int contarVecinos(int x, int y, struct_grid t){
 
 	int xm = (t.sizeX + ((x - 1) % t.sizeX)) % t.sizeX;
 	int xM = (x + 1) % t.sizeX;
@@ -127,12 +141,12 @@ int contarVecinos(int x, int y, struct_tablero t){
 	int yM = (y + 1) % t.sizeY;
 
 	return	(t.celdas[xm][yM] + t.celdas[x][yM] + t.celdas[xM][yM]) +
-			(t.celdas[xm][y] + t.celdas[xM][y]) +
-			(t.celdas[xm][ym] + t.celdas[x][ym] + t.celdas[xM][ym]);
+		(t.celdas[xm][y] + t.celdas[xM][y]) +
+		(t.celdas[xm][ym] + t.celdas[x][ym] + t.celdas[xM][ym]);
 
 }
 
-void updateGrid(struct_tablero *t){
+void updateGrid(struct_grid *t){
 	int i, j;
 
 	for (i = 0; i < (*t).sizeX; i++){
@@ -140,10 +154,4 @@ void updateGrid(struct_tablero *t){
 			(*t).celdas[i][j] = (*t).nuevo[i][j];
 		}
 	}
-}
-
-// No hace falta, pensaba que era más complicado...
-void verificaCasilla(int *x, int *y, struct_tablero t){
-		*x = (*x) % t.sizeX;
-		*y = (*y) % t.sizeY;
 }
