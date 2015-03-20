@@ -3,119 +3,191 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <stdlib.h>
+#include <conio.h>
 
-cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size);
+#include "header.h"
 
-__global__ void addKernel(int *c, const int *a, const int *b)
+//  declaración de la kernel. Se le introducen por parámetro dos arrays unidimensionales. 
+// Se sacan los índices mediante la división entera y el módulo. 
+__global__ void compKernel(int* celdas, int* nuevo, int sizeX, int sizeY)
 {
-    int i = threadIdx.x;
-    c[i] = a[i] + b[i];
+	int thx = threadIdx.x;
+	int i = thx % sizeX;
+	int j = thx / sizeX;
+
+	int xm = (sizeX + ((i - 1) % sizeX)) % sizeX;
+	int xM = (i + 1) % sizeX;
+
+	int ym = (sizeY + ((j - 1) % sizeY)) % sizeY;
+	int yM = (j + 1) % sizeY;
+
+
+	int vecinos =	(celdas[xm + yM *sizeX] + celdas[i + yM *sizeX] + celdas[xM + yM *sizeX]) +
+					(celdas[xm + j*sizeX] + celdas[xM + j*sizeX]) +
+					(celdas[xm + ym * sizeX] + celdas[i + ym * sizeX] + celdas[xM + ym*sizeX]);
+
+	if ((vecinos == 2 && celdas[i + j*sizeX]) || vecinos == 3){
+		nuevo[i + j*sizeX] = 1;
+	}
+	else{
+		nuevo[i + j * sizeX] = 0;
+	}
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    const int arraySize = 5;
-    const int a[arraySize] = { 1, 2, 3, 4, 5 };
-    const int b[arraySize] = { 10, 20, 30, 40, 50 };
-    int c[arraySize] = { 0 };
+	int i, manual = 0;
+	struct_grid grid;
 
-    // Add vectors in parallel.
-    cudaError_t cudaStatus = addWithCuda(c, a, b, arraySize);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addWithCuda failed!");
-        return 1;
-    }
+	//	Inicializamos los número aleatorios
+	srand((int)time(NULL));
 
-    printf("{1,2,3,4,5} + {10,20,30,40,50} = {%d,%d,%d,%d,%d}\n",
-        c[0], c[1], c[2], c[3], c[4]);
+	gridInit(10, 10, &grid);
+	printGrid(grid);
+	juega(&grid, 1);
 
-    // cudaDeviceReset must be called before exiting in order for profiling and
-    // tracing tools such as Nsight and Visual Profiler to show complete traces.
-    cudaStatus = cudaDeviceReset();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaDeviceReset failed!");
-        return 1;
-    }
+	printGrid(grid);
 
-    return 0;
+	system("pause");
+
+	cudaDeviceReset();
+
+	return 0;
 }
 
-// Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(int *c, const int *a, const int *b, unsigned int size)
-{
-    int *dev_a = 0;
-    int *dev_b = 0;
-    int *dev_c = 0;
-    cudaError_t cudaStatus;
+void juega(struct_grid *t, int manual){
+	while (compruebaCasillas(t)){
+		if (manual){
+			printf("\nPresiona intro para continuar o \"c\" para parar la ejecución...\n");
 
-    // Choose which GPU to run on, change this on a multi-GPU system.
-    cudaStatus = cudaSetDevice(0);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        goto Error;
-    }
+			int option;
+			do{
+				option = getch();
+				if (option == 67 || option == 99)
+					return;
+			} while (option != 13);
 
-    // Allocate GPU buffers for three vectors (two input, one output)    .
-    cudaStatus = cudaMalloc((void**)&dev_c, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
+		}
+		else{
+			SLEEP(1000);
+		}
+		printGrid(*t);
+	}
+}
+void gridInit(int x, int y, struct_grid *t){
+	int i, j;
 
-    cudaStatus = cudaMalloc((void**)&dev_a, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
+	(*t).sizeX = x;
+	(*t).sizeY = y;
+	(*t).celdas = (int**)malloc(sizeof(int) * (*t).sizeX);
 
-    cudaStatus = cudaMalloc((void**)&dev_b, size * sizeof(int));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-        goto Error;
-    }
+	for (i = 0; i < (*t).sizeX; i++)
+		(*t).celdas[i] = (int*)malloc((*t).sizeY * sizeof(int));
 
-    // Copy input vectors from host memory to GPU buffers.
-    cudaStatus = cudaMemcpy(dev_a, a, size * sizeof(int), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
+	(*t).nuevo = (int**)malloc(sizeof(int) * (*t).sizeX);
+	for (i = 0; i < (*t).sizeX; i++)
+		(*t).nuevo[i] = (int*)malloc((*t).sizeY * sizeof(int));
 
-    cudaStatus = cudaMemcpy(dev_b, b, size * sizeof(int), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
+	for (i = 0; i < (*t).sizeX; i++){
+		for (j = 0; j < (*t).sizeY; j++){
+			(*t).celdas[i][j] = 0;
+			(*t).nuevo[i][j] = 0;
+		}
+	}
 
-    // Launch a kernel on the GPU with one thread for each element.
-    addKernel<<<1, size>>>(dev_c, dev_a, dev_b);
+	for (i = 0; i < (*t).sizeX; i++)
+		for (j = 0; j < (*t).sizeY; j++)
+			(*t).celdas[i][j] = rand() % 2;
 
-    // Check for any errors launching the kernel
-    cudaStatus = cudaGetLastError();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addKernel launch failed: %s\n", cudaGetErrorString(cudaStatus));
-        goto Error;
-    }
-    
-    // cudaDeviceSynchronize waits for the kernel to finish, and returns
-    // any errors encountered during the launch.
-    cudaStatus = cudaDeviceSynchronize();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
-        goto Error;
-    }
+}
 
-    // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(c, dev_c, size * sizeof(int), cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
+void printGrid(struct_grid t){
 
-Error:
-    cudaFree(dev_c);
-    cudaFree(dev_a);
-    cudaFree(dev_b);
-    
-    return cudaStatus;
+	CLRSCR();
+	printf("Game of life [CPU]\n\n");
+
+	int i, j;
+
+	for (i = 0; i < t.sizeX; i++){
+		printf("[");
+		for (j = 0; j < t.sizeY; j++){
+
+			if (t.celdas[i][j])
+				printf("%c", VIVA);
+			else
+				printf("%c", MUERTA);
+		}
+		printf("]\n");
+	}
+}
+
+int* convierte(int** matriz, int dimX, int dimY){
+	int* vector = (int*)malloc(dimX * dimY * sizeof(int));
+	for (int i = 0; i < dimX; i++)
+		for (int j = 0; j < dimY; j++)
+			vector[i + j*dimX] = matriz[i][j];
+	return vector;
+}
+
+int** convierte(int* vector, int dimX, int dimY){
+	int i;
+	int** matriz = (int**)malloc(sizeof(int) * dimX);
+
+	for (i = 0; i < dimX; i++)
+		matriz[i] = (int*)malloc(dimY * sizeof(int));
+
+	for (int i = 0; i < dimX; i++)
+		for (int j = 0; j < dimY; j++)
+			matriz[i][j] = vector[i + j*dimX];
+
+	return matriz;
+}
+
+int compruebaCasillas(struct_grid *t){
+
+	int i, j, vivo = 0;
+
+	int *dev_tablero = 0;
+	int *dev_nuevo = 0;
+	int size = (*t).sizeX * (*t).sizeY;
+
+	// Allocate GPU buffers
+	cudaMalloc((void**)&dev_tablero, size*sizeof(int));
+	cudaMalloc((void**)&dev_nuevo, size*sizeof(int));
+
+	cudaMemcpy(dev_tablero, convierte((*t).celdas, (*t).sizeX, (*t).sizeY), size*sizeof(int), cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_nuevo, convierte((*t).celdas, (*t).sizeX, (*t).sizeY), size*sizeof(int), cudaMemcpyHostToDevice);
+
+	// Launch a kernel on the GPU with one thread for each element.
+	compKernel <<<1 ,(*t).sizeX * (*t).sizeY >>>(dev_tablero, dev_nuevo, (*t).sizeX, (*t).sizeY);
+
+	// cudaDeviceSynchronize waits for the kernel to finish, and returns
+	// any errors encountered during the launch.
+	cudaDeviceSynchronize();
+
+
+	int *a = (int*)malloc((*t).sizeX * (*t).sizeY * sizeof(int));
+	int *b = (int*)malloc((*t).sizeX * (*t).sizeY * sizeof(int)); 
+	cudaMemcpy(a, dev_tablero, (*t).sizeX*(*t).sizeY*sizeof(int *),cudaMemcpyDeviceToHost);
+	cudaMemcpy(b, dev_nuevo, (*t).sizeX*(*t).sizeY*sizeof(int *), cudaMemcpyDeviceToHost);
+	(*t).celdas = convierte(a, (*t).sizeX, (*t).sizeY);
+	(*t).nuevo = convierte(b, (*t).sizeX, (*t).sizeY);
+
+	updateGrid(t);
+
+	return 1;
+}
+
+void updateGrid(struct_grid *t){
+	int i, j;
+
+	for (i = 0; i < (*t).sizeX; i++){
+		for (j = 0; j < (*t).sizeY; j++){
+			(*t).celdas[i][j] = (*t).nuevo[i][j];
+		}
+	}
 }
