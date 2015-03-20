@@ -1,14 +1,3 @@
-
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <stdlib.h>
-#include <conio.h>
-
 #include "header.h"
 
 //  declaración de la kernel. Se le introducen por parámetro dos arrays unidimensionales. 
@@ -102,7 +91,7 @@ void juega(struct_grid *t, int manual){
 	}
 }
 //---------------------------------------------------------------------------------------------------//
-//Hace un malloc de las estructuras del grid, dados unos tamaños. 
+//alojar memoria de las estructuras del grid, dados unos tamaños. 
 void gridInit(int x, int y, struct_grid *t){
 	int i, j;
 
@@ -130,7 +119,7 @@ void gridInit(int x, int y, struct_grid *t){
 
 }
 //---------------------------------------------------------------------------------------------------//
-//Pinta una matriz
+//Muestra por pantalla la matriz
 void printGrid(struct_grid t){
 
 	CLRSCR();
@@ -210,6 +199,7 @@ int compruebaCasillas(struct_grid *t){
 	return 1;
 }
 //---------------------------------------------------------------------------------------------------//
+//actualiza el nuevo grid al actual
 void updateGrid(struct_grid *t){
 	int i, j;
 

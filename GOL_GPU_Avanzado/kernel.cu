@@ -1,14 +1,4 @@
-
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <stdlib.h>
-#include <conio.h>
-
+	
 #include "header.h"
 
 //  declaración de la kernel. Se le introducen por parámetro dos arrays unidimensionales. 
@@ -179,13 +169,13 @@ int compruebaCasillas(struct_grid *t){
 	grid_size.x = (*t).sizeX / block_size.x;
 	grid_size.y = (*t).sizeY / block_size.y;
 
-
+	//llamada al kernel
 	compKernel <<<grid_size ,block_size >>>(dev_tablero, dev_nuevo, (*t).sizeX, (*t).sizeY);
 
 
 	cudaDeviceSynchronize();
 
-
+	//alojar memoria para los nuevos arrays, copiarlos del host y asignarlos al array de nuevos y celdas.
 	int *a = (int*)malloc((*t).sizeX * (*t).sizeY * sizeof(int));
 	int *b = (int*)malloc((*t).sizeX * (*t).sizeY * sizeof(int)); 
 	cudaMemcpy(a, dev_tablero, (*t).sizeX*(*t).sizeY*sizeof(int *),cudaMemcpyDeviceToHost);
@@ -193,11 +183,13 @@ int compruebaCasillas(struct_grid *t){
 	(*t).celdas = convierte(a, (*t).sizeX, (*t).sizeY);
 	(*t).nuevo = convierte(b, (*t).sizeX, (*t).sizeY);
 
+	//actualizar el grid
 	updateGrid(t);
 
 	return 1;
 }
 //---------------------------------------------------------------------------------------------------//
+//actualiza el nuevo grid al actual
 void updateGrid(struct_grid *t){
 	int i, j;
 

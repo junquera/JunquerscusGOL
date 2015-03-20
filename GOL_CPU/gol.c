@@ -1,14 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <stdlib.h>
-#include <conio.h>
-
-
-
 #include "header.h"
-
+//---------------------------------------------------------------------------------------------------//
 int main(int argc, char *argv[]){
 
 	int i, manual = 0;
@@ -17,6 +8,7 @@ int main(int argc, char *argv[]){
 	//	Inicializamos los número aleatorios
 	srand((int)time(NULL));
 
+	//Comprobación de los parámetros
 	if (argc > 1){
 
 		int posSize = -1;
@@ -33,18 +25,24 @@ int main(int argc, char *argv[]){
 		if (posSize == -1)
 			return -1;
 
+		//inicializa el grid en función de los parámetros que le hemos enviado
 		gridInit(atoi(argv[posSize + 1]), atoi(argv[posSize + 2]), &grid);
+
+		//pinta la primera vez en grid
 		printGrid(grid);
 
 	}
 
-	juega(&grid, manual);
 
+	//método jugar principal
+	juega(&grid, manual);
 
 	system("pause");
 	return 0;
 }
-
+//---------------------------------------------------------------------------------------------------//
+//métdo jugar. Juega mientras la el método casillas devuelva 1. Mientras sea manual, estará pidiendo 
+//		precionar, si no, dormirá un segundo y seguirá ejecutando.
 void juega(struct_grid *t, int manual){
 	while (compruebaCasillas(t)){
 		if (manual){
@@ -64,6 +62,8 @@ void juega(struct_grid *t, int manual){
 		printGrid(*t);
 	}
 }
+//---------------------------------------------------------------------------------------------------//
+//alojar memoria de las estructuras del grid, dados unos tamaños. 
 void gridInit(int x, int y, struct_grid *t){
 	int i, j;
 
@@ -90,7 +90,8 @@ void gridInit(int x, int y, struct_grid *t){
 			(*t).celdas[i][j] = rand() % 2;
 
 }
-
+//---------------------------------------------------------------------------------------------------//
+//Muestra por pantalla la matriz
 void printGrid(struct_grid t){
 
 	CLRSCR();
@@ -110,11 +111,12 @@ void printGrid(struct_grid t){
 		printf("]\n");
 	}
 }
-
+//---------------------------------------------------------------------------------------------------//
+//Éste método cuenta los vecinos de cada casilla y asigna el nuevo
 int compruebaCasillas(struct_grid *t){
 
 	int i, j, vivo = 0;
-
+	//recorrer todas las casillas
 	for (i = 0; i < (*t).sizeX; i++){
 		for (j = 0; j < (*t).sizeY; j++){
 			int vecinos = contarVecinos(i, j, *t);
@@ -127,11 +129,13 @@ int compruebaCasillas(struct_grid *t){
 			}
 		}
 	}
+	//actualizar grid
 	updateGrid(t);
 
 	return vivo;
 }
-
+//---------------------------------------------------------------------------------------------------//
+//Dado un grid, devuelve todos los vecinos
 int contarVecinos(int x, int y, struct_grid t){
 
 	int xm = (t.sizeX + ((x - 1) % t.sizeX)) % t.sizeX;
@@ -145,7 +149,8 @@ int contarVecinos(int x, int y, struct_grid t){
 		(t.celdas[xm][ym] + t.celdas[x][ym] + t.celdas[xM][ym]);
 
 }
-
+//---------------------------------------------------------------------------------------------------//
+//actualiza el nuevo grid al actual
 void updateGrid(struct_grid *t){
 	int i, j;
 

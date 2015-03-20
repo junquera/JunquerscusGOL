@@ -1,6 +1,16 @@
 #define VIVA 'X'
 #define MUERTA ' '
 
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <stdlib.h>
+#include <conio.h>
+
 #ifdef _WIN32
 #include <Windows.h>
 #define SLEEP(x) Sleep(x)
